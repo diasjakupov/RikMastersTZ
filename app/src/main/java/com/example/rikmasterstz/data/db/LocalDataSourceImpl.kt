@@ -130,6 +130,20 @@ class LocalDataSourceImpl @Inject constructor(
         }
     }
 
+    override suspend fun deleteDoors() {
+        val realm = Realm.getInstance(realmConfig)
+        realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+            realmTransaction.delete(DoorRealm::class.java)
+        }
+    }
+
+    override suspend fun deleteCameras() {
+        val realm = Realm.getInstance(realmConfig)
+        realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+            realmTransaction.delete(CameraRealm::class.java)
+        }
+    }
+
     override suspend fun insertCameraEntries(cameras: List<CameraModel>) {
         val realm = Realm.getInstance(realmConfig)
         realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->

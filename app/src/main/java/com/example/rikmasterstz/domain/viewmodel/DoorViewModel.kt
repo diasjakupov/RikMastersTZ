@@ -22,18 +22,21 @@ import javax.inject.Inject
 class DoorViewModel @Inject constructor(
     private val networkManagerImpl: NetworkManagerImpl,
     private val localDataSourceImpl: LocalDataSourceImpl
-): ViewModel() {
+) : ViewModel() {
     private val _doors: MutableLiveData<Response> = MutableLiveData()
     val doors: LiveData<Response> = _doors
+
+    val isRefreshing = MutableLiveData<Boolean>(false)
+
 
     private suspend fun retrieveFromDB(): List<DoorModel> {
         return localDataSourceImpl.retrieveDoorModels()
     }
 
-    fun fetchAllDoors() {
+    fun fetchAllDoors(force: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
             val fromDB = retrieveFromDB()
-            if (fromDB.isNotEmpty()) {
+            if (fromDB.isNotEmpty() && !force) {
                 _doors.postValue(
                     Response.Success(
                         data =
@@ -54,6 +57,9 @@ class DoorViewModel @Inject constructor(
                         is Response.Success<*> -> {
                             val doors =
                                 (fromNetwork as Response.Success<NetworkDoorResult>).data.data
+                            if (force) {
+                                localDataSourceImpl.deleteDoors()
+                            }
                             localDataSourceImpl.insertDoorEntries(doors)
                             Response.Success(doors)
                         }

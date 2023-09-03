@@ -102,6 +102,8 @@ dependencies {
     //Lifecycle
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
     implementation("androidx.compose.runtime:runtime-livedata:1.5.0")
+
+    implementation("androidx.compose.material:material:1.4.0")
 }
 
 // Allow references to generated code

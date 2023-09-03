@@ -26,15 +26,17 @@ class CameraViewModel @Inject constructor(
     private val _cameras: MutableLiveData<Response> = MutableLiveData()
     val camera: LiveData<Response> = _cameras
 
+    val isRefreshing = MutableLiveData<Boolean>(false)
+
     private suspend fun retrieveFromDB(): List<CameraModel> {
         return localDataSourceImpl.retrieveCameraModels()
     }
 
-    fun fetchAllCameras() {
+    fun fetchAllCameras(force: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
             val fromDB = retrieveFromDB()
             Log.e("TAG FROM DB", "$fromDB")
-            if (fromDB.isNotEmpty()) {
+            if (fromDB.isNotEmpty() && !force) {
                 _cameras.postValue(
                     Response.Success(
                         data =
@@ -56,6 +58,9 @@ class CameraViewModel @Inject constructor(
                         is Response.Success<*> -> {
                             val cameras =
                                 (fromNetwork as Response.Success<NetworkCameraResult>).data.data.cameras
+                            if(force){
+                                localDataSourceImpl.deleteCameras()
+                            }
                             localDataSourceImpl.insertCameraEntries(cameras)
                             Response.Success(cameras)
                         }
